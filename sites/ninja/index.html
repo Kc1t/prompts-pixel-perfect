@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ronin — Lâmina sem mestre</title>
+<meta name="description" content="Ronin: armadura de placas com visor térmico. Edição numerada de 300 peças.">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/poster.jpg">
+<style>
+:root{
+  --text:#f6e7d8;
+  --glass:rgba(20,8,4,.55);
+  --glass-border:rgba(255,255,255,.12);
+  --visor:#ff7a1f;
+  --dark:#120604;
+  --title:'Chakra Petch',system-ui,sans-serif;
+  --ui:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:0px;--x:50%;--y:50%;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--dark)}
+body{background:var(--dark);color:var(--text);font:400 16px/1.55 var(--ui);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.label{font:500 12px/1.2 var(--title);text-transform:uppercase;letter-spacing:.12em}
+.glass{background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:16px}
+.btn-ghost{text-decoration:none;display:inline-flex;align-items:center;gap:.5em;padding:.7em 1.2em;border:1px solid rgba(246,231,216,.5);border-radius:999px;font:500 12px/1 var(--title);text-transform:uppercase;letter-spacing:.12em;transition:border-color .2s,background .2s}
+.btn-ghost:hover,.btn-ghost:focus-visible{border-color:var(--text);background:rgba(246,231,216,.08)}
+:focus-visible{outline:2px solid var(--visor);outline-offset:3px}
+
+/* Brasas: um canvas fixo, por cima das imagens e abaixo do texto */
+#embers{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;transition:opacity .4s}
+
+/* HERO */
+.hero{position:relative;height:100vh;height:100svh;min-height:620px;overflow:hidden;isolation:isolate}
+.hero .media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:var(--obj-x,50%) 50%}
+.hero video{z-index:0}
+.hero .xray{z-index:0;
+  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 70%,transparent 100%);
+  mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 70%,transparent 100%)}
+.hero .ring{position:absolute;z-index:0;left:0;top:0;width:calc(var(--r)*2);height:calc(var(--r)*2);border-radius:50%;
+  transform:translate(calc(var(--x) - var(--r)),calc(var(--y) - var(--r)));
+  box-shadow:0 0 0 1px rgba(255,122,31,.55),0 0 24px rgba(255,122,31,.35),inset 0 0 18px rgba(255,122,31,.25);pointer-events:none}
+.hero .shade{position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,rgba(18,6,4,.55) 0%,rgba(18,6,4,.15) 38%,transparent 55%),linear-gradient(0deg,rgba(18,6,4,.6),transparent 30%)}
+.hero .ui{position:absolute;inset:0;z-index:2;pointer-events:none}
+.hero .ui > *{pointer-events:auto}
+.hero-top{position:absolute;left:clamp(20px,4vw,64px);top:clamp(28px,6vh,72px);max-width:min(560px,42vw)}
+.brand{display:block;margin-bottom:clamp(20px,4vh,44px);opacity:.8}
+h1{font:700 clamp(48px,6.4vw,104px)/1.0 var(--title);text-transform:uppercase;letter-spacing:.01em}
+h1 span{display:block}
+.lede{margin-top:22px;font-size:17px;max-width:30em}
+.lede span{display:block}
+.round-btns{display:flex;gap:12px;margin-top:24px}
+.round-btns button{width:48px;height:48px;border-radius:50%;display:grid;place-items:center}
+.round-btns button:hover{border-color:rgba(246,231,216,.4)}
+.round-btns svg{width:18px;height:18px}
+.counter{position:absolute;right:clamp(20px,4vw,64px);top:clamp(28px,6vh,72px);font:500 14px/1 var(--title);letter-spacing:.12em}
+.counter b{font-weight:700}
+.product{position:absolute;left:clamp(20px,4vw,64px);bottom:clamp(20px,5vh,56px);display:flex;gap:16px;align-items:center;padding:12px 18px 12px 12px;width:min(420px,40vw)}
+.thumb{flex:none;width:76px;height:76px;border-radius:10px;background:url(assets/base.jpg) no-repeat;background-size:560%;background-position:69% 14%}
+.product .meta{flex:1;min-width:0}
+.product h2{font:500 15px/1.3 var(--ui)}
+.product p{font-size:13px;opacity:.7;margin:2px 0 10px}
+.specs{position:absolute;right:clamp(20px,4vw,64px);bottom:clamp(20px,5vh,56px);width:min(340px,30vw);padding:8px 18px}
+.specs dl{display:grid;grid-template-columns:1fr auto}
+.specs dt,.specs dd{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.specs dt:nth-last-of-type(1),.specs dd:last-child{border-bottom:0}
+.specs dt{opacity:.7}
+.specs dd{text-align:right;font:500 14px/1.2 var(--ui)}
+
+/* entrada do texto */
+.rise{opacity:0;transform:translateY(18px);animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(var(--i) * 80ms + 150ms)}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* SEÇÕES */
+main{position:relative;z-index:2;background:transparent}
+.wrap{width:min(1200px,100% - 2*clamp(20px,4vw,64px));margin-inline:auto}
+section{position:relative}
+.sec-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:40px}
+h2.sec{font:700 clamp(34px,4.4vw,64px)/1 var(--title);text-transform:uppercase}
+.sec-head p{max-width:28em;opacity:.75}
+
+/* Por dentro */
+.inside{height:260vh}
+.inside .sticky{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:40px}
+.inside .sec-head{width:min(1200px,100% - 2*clamp(20px,4vw,64px));margin:0 auto 32px}
+.fig{position:relative;width:100%}
+.frame{position:relative;width:100%;aspect-ratio:21/9;overflow:hidden}
+.fig img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.fig .xr{clip-path:inset(0 calc(100% - var(--sx) - var(--sw)/2) 0 calc(var(--sx) - var(--sw)/2));--sx:-20%;--sw:16%}
+.fig .edge{position:absolute;top:0;bottom:0;width:2px;background:var(--visor);box-shadow:0 0 16px 2px rgba(255,122,31,.7);opacity:.9;pointer-events:none}
+.fig svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.fig line{stroke:rgba(246,231,216,.7);stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:3000;stroke-dashoffset:3000;transition:stroke-dashoffset .6s ease}
+.fig circle{fill:var(--visor);opacity:0;transition:opacity .3s}
+.fig .on line{stroke-dashoffset:0}
+.fig .on circle{opacity:1}
+.tag{position:absolute;left:4%;transform:translateY(-50%);max-width:26%;opacity:0;translate:-12px 0;transition:opacity .4s,translate .4s}
+.tag.on{opacity:1;translate:0 0}
+.tag .label{display:block;color:var(--visor);margin-bottom:4px}
+.tag p{font-size:14px;line-height:1.4}
+
+/* Especificações */
+.spec-sec{padding:140px 0 120px}
+.table{border-top:1px solid rgba(255,255,255,.1)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:24px;padding:22px 0;border-bottom:1px solid rgba(255,255,255,.1);opacity:0;transform:translateX(-40px);transition:opacity .6s,transform .6s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i) * 60ms)}
+.table.in .row{opacity:1;transform:none}
+.row .k{font:500 12px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.12em;opacity:.75}
+.row .v{font:400 18px/1.35 var(--ui);text-align:right}
+
+/* A linha */
+.line-sec{padding:40px 0 140px}
+.cards{display:grid;grid-template-columns:1fr;gap:20px}
+@media (min-width:900px){.cards{grid-template-columns:repeat(3,1fr)}}
+.card{padding:14px 14px 22px;transition:border-color .25s,transform .25s}
+.card:hover{border-color:var(--visor);transform:translateY(-4px)}
+.card .pic{aspect-ratio:4/3;border-radius:10px;background-repeat:no-repeat;margin-bottom:18px}
+.card h3{font:700 22px/1.1 var(--title);text-transform:uppercase;letter-spacing:.02em;padding:0 6px}
+.card p{padding:8px 6px 18px;opacity:.8;font-size:15px}
+.card .btn-ghost{margin-left:6px}
+
+/* Chamada final */
+.cta{padding:120px 0 140px;text-align:left}
+.cta h2{font:700 clamp(34px,8.4vw,150px)/.95 var(--title);white-space:nowrap;text-transform:uppercase;letter-spacing:-.01em}
+.cta h2 span{display:block}
+.cta .btn-ghost{margin-top:44px;font-size:14px;padding:1em 1.8em}
+footer{padding:28px 0 40px;border-top:1px solid rgba(255,255,255,.08);font:400 12px/1.6 var(--mono);opacity:.5;text-transform:uppercase;letter-spacing:.08em}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+/* RESPONSIVO */
+@media (max-width:767px){
+  .hero{height:auto;min-height:100svh}
+  .hero .media{height:100svh;--obj-x:68%}
+  .hero .shade{height:100svh;background:linear-gradient(180deg,rgba(18,6,4,.7) 0%,rgba(18,6,4,.2) 45%,transparent 60%),linear-gradient(0deg,var(--dark),transparent 35%)}
+  .hero .ui{position:relative;inset:auto;display:flex;flex-direction:column;gap:16px;padding:28px 20px 32px}
+  .hero-top,.product,.specs,.counter{position:relative;left:auto;right:auto;top:auto;bottom:auto;max-width:none;width:auto}
+  .counter{position:absolute;right:20px;top:30px}
+  .hero-top{margin-bottom:38svh}
+  h1{font-size:clamp(44px,13vw,64px)}
+  .lede{font-size:16px}
+  .lede span{display:inline}
+  .sec-head{flex-direction:column;align-items:start}
+  .inside{height:auto}
+  .inside .sticky{position:relative;height:auto;padding:96px 0 0}
+  .fig svg{display:none}
+  .tag{position:static;transform:none;max-width:none;opacity:1;translate:0}
+  .tags{display:grid;gap:18px;padding:24px 20px 0}
+  .row{flex-direction:column;gap:6px}
+  .row .v{text-align:left}
+  .spec-sec{padding:96px 0 80px}
+}
+@media (min-width:768px){.tags{display:contents}}
+
+@media (prefers-reduced-motion:reduce){
+  .rise{animation:none;opacity:1;transform:none}
+  .row{transition:none;opacity:1;transform:none}
+  .tag,.fig line,.fig circle{transition:none}
+  .card,.card:hover{transition:none;transform:none}
+}
+</style>
+</head>
+<body>
+<canvas id="embers" aria-hidden="true"></canvas>
+
+<header class="hero" id="hero">
+  <video class="media" id="loop" src="assets/loop.mp4" poster="assets/poster.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+  <img class="media xray" id="xray" src="assets/xray.jpg" alt="" aria-hidden="true">
+  <div class="ring" id="ring" aria-hidden="true"></div>
+  <div class="shade" aria-hidden="true"></div>
+
+  <div class="ui">
+    <div class="hero-top">
+      <span class="brand label rise" style="--i:0">Ronin · Edição 07</span>
+      <h1 aria-label="Lâmina sem mestre">
+        <span class="rise" style="--i:1">Lâmina</span>
+        <span class="rise" style="--i:2">sem</span>
+        <span class="rise" style="--i:3">mestre</span>
+      </h1>
+      <p class="lede">
+        <span class="rise" style="--i:4">Armadura de placas forjada à mão, visor com leitura térmica</span>
+        <span class="rise" style="--i:5">e um núcleo que ninguém vê de longe.</span>
+        <span class="rise" style="--i:6">Passe o cursor no capacete e olhe por dentro.</span>
+      </p>
+      <div class="round-btns rise" style="--i:7">
+        <button class="glass" type="button" aria-label="Assistir ao filme">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+        </button>
+        <button class="glass" type="button" aria-label="Salvar nos favoritos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4z"/></svg>
+        </button>
+        <button class="glass" type="button" aria-label="Compartilhar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="counter rise" style="--i:3" aria-label="Slide 1 de 26"><b>1</b>/26</div>
+
+    <article class="product glass rise" style="--i:8">
+      <div class="thumb" role="img" aria-label="Detalhe do capacete Kage-07"></div>
+      <div class="meta">
+        <h2>Capacete Kage-07</h2>
+        <p>Edição numerada · 300 peças</p>
+        <a class="btn-ghost" href="#a-linha">Ver a peça</a>
+      </div>
+    </article>
+
+    <aside class="specs glass rise" style="--i:9" aria-label="Especificações rápidas">
+      <dl>
+        <dt class="label">Peso</dt><dd>1,2 kg</dd>
+        <dt class="label">Visor</dt><dd>Térmico, 120°</dd>
+        <dt class="label">Placas</dt><dd>Carbono e aço</dd>
+        <dt class="label">Autonomia</dt><dd>18 h</dd>
+      </dl>
+    </aside>
+  </div>
+</header>
+
+<main>
+  <section class="inside" id="por-dentro" aria-labelledby="t-inside">
+    <div class="sticky">
+      <div class="sec-head">
+        <h2 class="sec" id="t-inside">Por dentro</h2>
+        <p>Role a página: a faixa atravessa a armadura e mostra o que fica embaixo das placas.</p>
+      </div>
+      <div class="fig" id="fig">
+        <div class="frame">
+        <img src="assets/base.jpg" alt="Ninja cibernético de perfil, com armadura escura e katana nas costas, diante de um fundo em brasa" loading="lazy">
+        <img class="xr" id="xr" src="assets/xray-base.jpg" alt="" aria-hidden="true" loading="lazy">
+        <div class="edge" id="edgeL"></div><div class="edge" id="edgeR"></div>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <g data-k="0"><line x1="31" y1="22" x2="67.5" y2="26.8"/></g>
+          <g data-k="1"><line x1="31" y1="50" x2="91.5" y2="38"/></g>
+          <g data-k="2"><line x1="31" y1="78" x2="79" y2="82.8"/></g>
+        </svg>
+        </div>
+        <div class="tags">
+          <div class="tag" data-k="0" data-x="67.5" style="top:22%"><span class="label">Capacete</span><p>Crânio blindado envolto numa malha de sensores.</p></div>
+          <div class="tag" data-k="1" data-x="91.5" style="top:50%"><span class="label">Katana</span><p>Bainha com trava magnética, presa às costas.</p></div>
+          <div class="tag" data-k="2" data-x="79" style="top:78%"><span class="label">Jaqueta</span><p>Placas gastas sobre um tórax de circuitos.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="spec-sec" id="especificacoes" aria-labelledby="t-spec">
+    <div class="wrap">
+      <div class="sec-head"><h2 class="sec" id="t-spec">Especificações</h2><p>Tudo o que a peça carrega, sem enfeite.</p></div>
+      <div class="table" id="table" role="list">
+        <div class="row" role="listitem" style="--i:0"><span class="k">Material externo</span><span class="v">Placas de aço temperado e fibra de carbono</span></div>
+        <div class="row" role="listitem" style="--i:1"><span class="k">Visor</span><span class="v">Leitura térmica, campo de 120°</span></div>
+        <div class="row" role="listitem" style="--i:2"><span class="k">Peso total</span><span class="v">4,8 kg com a jaqueta</span></div>
+        <div class="row" role="listitem" style="--i:3"><span class="k">Autonomia</span><span class="v">18 horas de uso contínuo</span></div>
+        <div class="row" role="listitem" style="--i:4"><span class="k">Iluminação</span><span class="v">Linha de LED âmbar, 2.200 K</span></div>
+        <div class="row" role="listitem" style="--i:5"><span class="k">Edição</span><span class="v">300 peças numeradas à mão</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="line-sec" id="a-linha" aria-labelledby="t-line">
+    <div class="wrap">
+      <div class="sec-head"><h2 class="sec" id="t-line">A linha</h2><p>Três peças, feitas pra funcionar juntas ou sozinhas.</p></div>
+      <div class="cards">
+        <article class="card glass">
+          <div class="pic" style="background-image:url(assets/base.jpg);background-size:330%;background-position:68% 8%" role="img" aria-label="Capacete com visor laranja"></div>
+          <h3>Kage-07</h3>
+          <p>O capacete. Visor térmico e uma linha de luz que não apaga.</p>
+          <a class="btn-ghost" href="#lista">Reservar</a>
+        </article>
+        <article class="card glass">
+          <div class="pic" style="background-image:url(assets/xray-base.jpg);background-size:300%;background-position:80% 78%" role="img" aria-label="Raio-X do tórax com circuitos"></div>
+          <h3>Jaqueta Hai</h3>
+          <p>Placas sobrepostas que dobram com o corpo, não contra ele.</p>
+          <a class="btn-ghost" href="#lista">Reservar</a>
+        </article>
+        <article class="card glass">
+          <div class="pic" style="background-image:url(assets/base.jpg);background-size:360%;background-position:97% 22%" role="img" aria-label="Cabo da katana nas costas"></div>
+          <h3>Bainha Tsuki</h3>
+          <p>Trava magnética e saque em um gesto, sem barulho.</p>
+          <a class="btn-ghost" href="#lista">Reservar</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta" id="lista" aria-labelledby="t-cta">
+    <div class="wrap">
+      <h2 id="t-cta"><span>Seja o próximo</span><span>a vestir</span></h2>
+      <a class="btn-ghost" href="#hero">Entrar na lista</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><span>Ronin · projeto fictício de demonstração</span><span>Imagens e vídeo gerados por IA · 2026</span></div>
+</footer>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const touch = matchMedia('(hover: none)').matches;
+  const hero = document.getElementById('hero');
+  const xray = document.getElementById('xray');
+  const ring = document.getElementById('ring');
+  const video = document.getElementById('loop');
+
+  // Ponto do capacete (crânio no raio-X), em fração da imagem 1912x1080
+  const HELMET = { fx: 0.672, fy: 0.27 };
+  const IMG_AR = 1912 / 1080;
+
+  if (reduce) { video.removeAttribute('autoplay'); video.pause(); video.removeAttribute('src'); video.load(); }
+
+  // fração da imagem -> px na hero, respeitando object-fit: cover e object-position
+  function imgToHero(fx, fy) {
+    const w = xray.clientWidth, h = xray.clientHeight;
+    const scale = Math.max(w / 1912, h / 1080);
+    const iw = 1912 * scale, ih = 1080 * scale;
+    const ox = parseFloat(getComputedStyle(xray).objectPosition) / 100;
+    return { x: (w - iw) * ox + fx * iw, y: (h - ih) * 0.5 + fy * ih };
+  }
+
+  const R = () => Math.max(120, Math.min(200, innerWidth * 0.12));
+  const pos = { x: 0, y: 0 }, target = { x: 0, y: 0 };
+  let r = 0, rFrom = 0, rTo = 0, rStart = 0, inside = false;
+  const ease = t => 1 - Math.pow(1 - t, 3);
+
+  function setR(to) { rFrom = r; rTo = to; rStart = performance.now(); }
+  function helmet() { return imgToHero(HELMET.fx, HELMET.fy); }
+
+  { const p = helmet(); pos.x = target.x = p.x; pos.y = target.y = p.y; }
+
+  if (reduce) {
+    r = rTo = R();
+  } else if (touch) {
+    setR(R());
+  } else {
+    hero.addEventListener('pointerenter', e => { inside = true; const b = hero.getBoundingClientRect(); pos.x = target.x = e.clientX - b.left; pos.y = target.y = e.clientY - b.top; setR(R()); });
+    hero.addEventListener('pointerleave', () => { inside = false; setR(0); });
+    hero.addEventListener('pointermove', e => { const b = hero.getBoundingClientRect(); target.x = e.clientX - b.left; target.y = e.clientY - b.top; });
+  }
+
+  function apply() {
+    xray.style.setProperty('--x', pos.x + 'px'); xray.style.setProperty('--y', pos.y + 'px'); xray.style.setProperty('--r', r + 'px');
+    ring.style.setProperty('--x', pos.x + 'px'); ring.style.setProperty('--y', pos.y + 'px'); ring.style.setProperty('--r', r + 'px');
+    ring.style.opacity = r > 2 ? 1 : 0;
+  }
+
+  function tick(now) {
+    if (touch && !reduce) {
+      const p = helmet(), t = now / 1000, a = Math.min(xray.clientWidth, xray.clientHeight) * 0.08;
+      target.x = p.x + Math.sin(t * 0.7) * a * 1.4; target.y = p.y + Math.sin(t * 1.1) * a;
+    }
+    pos.x += (target.x - pos.x) * 0.12;
+    pos.y += (target.y - pos.y) * 0.12;
+    const k = Math.min(1, (now - rStart) / 600);
+    r = rFrom + (rTo - rFrom) * ease(k);
+    apply();
+    if (!reduce) requestAnimationFrame(tick);
+  }
+  if (reduce) apply(); else requestAnimationFrame(tick);
+  addEventListener('resize', () => { if (reduce || (touch)) { const p = helmet(); pos.x = target.x = p.x; pos.y = target.y = p.y; if (reduce) { r = R(); apply(); } } if (rTo > 0) rTo = R(); });
+
+  // ---------- Brasas ----------
+  const cv = document.getElementById('embers'), cx = cv.getContext('2d');
+  let W, H, dpr, parts = [];
+  function size() {
+    dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.round(Math.min(90, W * H / 16000));
+    parts = Array.from({ length: n }, () => spawn(true));
+  }
+  function spawn(any) {
+    return { x: Math.random() * W, y: any ? Math.random() * H : H + 10, v: 0.3 + Math.random() * 0.9, s: 0.6 + Math.random() * 1.8, w: Math.random() * Math.PI * 2, a: 0.4 + Math.random() * 0.6 };
+  }
+  function drawEmbers(t) {
+    cx.clearRect(0, 0, W, H);
+    for (const p of parts) {
+      if (!reduce) { p.y -= p.v; p.x += Math.sin(t / 900 + p.w) * 0.35; if (p.y < -10) Object.assign(p, spawn(false)); }
+      const g = cx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.s * 3);
+      g.addColorStop(0, `rgba(255,190,110,${p.a})`); g.addColorStop(0.4, `rgba(255,110,30,${p.a * 0.6})`); g.addColorStop(1, 'rgba(255,80,20,0)');
+      cx.fillStyle = g; cx.beginPath(); cx.arc(p.x, p.y, p.s * 3, 0, Math.PI * 2); cx.fill();
+    }
+    if (!reduce) requestAnimationFrame(drawEmbers);
+  }
+  size(); addEventListener('resize', size); requestAnimationFrame(drawEmbers);
+  function emberFade() { cv.style.opacity = scrollY > hero.offsetHeight * 0.6 ? 0.4 : 1; }
+  addEventListener('scroll', emberFade, { passive: true }); emberFade();
+
+  // ---------- Por dentro: faixa de raio-X ----------
+  const sec = document.getElementById('por-dentro'), xr = document.getElementById('xr');
+  const eL = document.getElementById('edgeL'), eR = document.getElementById('edgeR');
+  const tags = [...document.querySelectorAll('.tag')], groups = [...document.querySelectorAll('.fig svg g')];
+  const mobile = matchMedia('(max-width: 767px)');
+  const SW = 16;
+  function setStripe(sx) {
+    xr.style.setProperty('--sx', sx + '%'); xr.style.setProperty('--sw', SW + '%');
+    eL.style.left = `calc(${sx - SW / 2}% - 1px)`; eR.style.left = `calc(${sx + SW / 2}% - 1px)`;
+    tags.forEach((t, i) => { const on = sx + SW / 2 >= parseFloat(t.dataset.x); t.classList.toggle('on', on); groups[i].classList.toggle('on', on); });
+  }
+  function stripeTick(now) {
+    let sx;
+    if (mobile.matches) {
+      sx = 50 + Math.sin(now / 1600) * 58; // passeia sozinha
+    } else {
+      const b = sec.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, -b.top / (b.height - innerHeight)));
+      sx = -SW / 2 + p * (100 + SW);
+    }
+    setStripe(sx);
+    requestAnimationFrame(stripeTick);
+  }
+  if (reduce) {
+    xr.style.clipPath = 'inset(0 0 0 50%)'; eL.style.left = 'calc(50% - 1px)'; eR.style.display = 'none';
+    tags.forEach((t, i) => { t.classList.add('on'); groups[i].classList.add('on'); });
+  } else requestAnimationFrame(stripeTick);
+
+  // ---------- Especificações ----------
+  const table = document.getElementById('table');
+  if (reduce || !('IntersectionObserver' in window)) table.classList.add('in');
+  else new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { table.classList.add('in'); o.disconnect(); } }), { threshold: 0.2 }).observe(table);
+})();
+</script>
+</body>
+</html>

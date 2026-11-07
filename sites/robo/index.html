@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sereno, o robô que presta atenção</title>
+<link rel="stylesheet" href="https://db.onlinewebfonts.com/c/5ac3fe7c6abd2f62067f266d89671492?family=HelveticaNowDisplay-Medium">
+<link rel="stylesheet" href="https://db.onlinewebfonts.com/c/1aa3377e489837a26d019bba501e779d?family=HelveticaNowDisplayW01-Rg">
+<link rel="preload" as="image" href="assets/poster.jpg">
+<style>
+  :root {
+    --titulo: 'HelveticaNowDisplay-Medium', 'Helvetica Neue', Arial, sans-serif;
+    --texto: 'HelveticaNowDisplayW01-Rg', 'Helvetica Neue', Arial, sans-serif;
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --fundo: #d9d7d3;
+    --borda: 1px solid rgba(0,0,0,.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--fundo); }
+  body { color: #000; font-family: var(--texto); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+
+  /* 3. ASSETS */
+  #bg {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: 70% center;
+    z-index: -1; pointer-events: none; background: var(--fundo);
+  }
+
+  /* 4. ESTRUTURA: menu */
+  .menu {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+    padding: 16px 20px;
+  }
+  .logo { font-family: var(--titulo); font-size: 21px; letter-spacing: -0.02em; }
+  .links { display: none; font-size: 23px; }
+  .links a, .contato, .menu-btn, .tela-menu a { transition: opacity 200ms; }
+  .links a:hover, .contato:hover, .menu-btn:hover, .tela-menu a:hover { opacity: .6; }
+  .contato { display: none; font-size: 23px; text-decoration: underline; text-underline-offset: .15em; }
+  .menu-btn { font: inherit; font-size: 23px; background: none; border: 0; color: #000; cursor: pointer; }
+
+  .tela-menu {
+    position: fixed; inset: 0; z-index: 9;
+    background: rgba(255,255,255,.95);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    display: flex; flex-direction: column; justify-content: center; gap: 8px;
+    padding: 0 20px; font-size: 32px;
+    opacity: 0; visibility: hidden; transition: opacity 200ms, visibility 200ms;
+  }
+  .tela-menu.aberto { opacity: 1; visibility: visible; }
+
+  /* Hero */
+  .hero {
+    height: 100dvh; display: flex; align-items: flex-end;
+    padding: 0 20px 48px;
+  }
+  .hero-caixa { max-width: 36rem; }
+  .intro {
+    font-size: clamp(18px, 4vw, 26px); line-height: 1.3;
+    filter: blur(4px);
+  }
+  .digitado {
+    font-size: clamp(18px, 4vw, 26px); line-height: 1.35; min-height: 54px;
+  }
+  .cursor { display: inline-block; animation: piscar 1s steps(1) infinite; }
+  .cursor.fim { display: none; }
+  @keyframes piscar { 50% { opacity: 0; } }
+
+  .pilulas { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 16px; }
+  .pilula {
+    font-size: 13px; padding: .3em 16px; border-radius: 999px;
+    background: #fff; color: #000; border: var(--borda);
+    transition: background 200ms, color 200ms;
+    opacity: 0; transform: translateY(8px);
+    animation: entrar .4s ease-out 400ms forwards;
+  }
+  .pilula:hover { background: #000; color: #fff; }
+  @keyframes entrar { to { opacity: 1; transform: none; } }
+
+  /* 9. O RESTO DA LANDING */
+  .secao { background: rgba(217,215,211,.92); padding: 160px 20px; }
+  .manifesto p {
+    font-family: var(--titulo); font-size: clamp(28px, 4.2vw, 56px);
+    line-height: 1.1; letter-spacing: -0.03em; max-width: 22ch;
+  }
+  .linha { display: block; filter: blur(8px); opacity: 0; transition: filter .8s, opacity .8s; }
+  .linha.dentro { filter: blur(0); opacity: 1; }
+
+  .faz { padding-top: 0; }
+  .colunas { display: grid; grid-template-columns: 1fr; gap: 40px; }
+  .coluna { border-top: var(--borda); padding-top: 24px; }
+  .num { font-family: var(--mono); font-size: 13px; }
+  .coluna h3 { font-family: var(--titulo); font-weight: normal; font-size: 23px; margin: 12px 0 8px; }
+  .coluna p { font-size: 16px; line-height: 1.5; color: rgba(0,0,0,.7); }
+
+  .olhares { padding-top: 0; }
+  .faixa { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .faixa img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: 70% center; border-radius: 12px; display: block; cursor: pointer; }
+
+  .chamada { padding-top: 0; text-align: center; }
+  .chamada h2 { font-family: var(--titulo); font-weight: normal; font-size: 56px; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 32px; }
+  .botao {
+    display: inline-block; font-size: 15px; padding: .5em 24px; border-radius: 999px;
+    background: #000; color: #fff; border: 1px solid #000;
+    transition: background 200ms, color 200ms;
+  }
+  .botao:hover { background: #fff; color: #000; }
+
+  .rodape {
+    background: rgba(217,215,211,.92);
+    font-size: 13px; color: rgba(0,0,0,.5); border-top: var(--borda);
+    padding: 24px 20px; display: flex; justify-content: space-between;
+  }
+
+  /* 7. RESPONSIVO */
+  @media (min-width: 640px) {
+    .menu { padding: 20px 32px; }
+    .logo { font-size: 26px; }
+    .pilula { font-size: 15px; padding: .3em 20px; }
+  }
+  @media (min-width: 768px) {
+    .links, .contato { display: block; }
+    .menu-btn, .tela-menu { display: none; }
+    .hero { align-items: center; padding: 0 40px; }
+    .secao { padding: 240px 40px; }
+    .faz, .olhares, .chamada { padding-top: 0; }
+    .colunas { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pilula { animation: none; opacity: 1; transform: none; }
+    .cursor { display: none; }
+    .linha { filter: none; opacity: 1; transition: none; }
+  }
+</style>
+</head>
+<body>
+  <video id="bg" src="assets/look.mp4" poster="assets/poster.jpg" muted playsinline preload="auto"></video>
+
+  <header class="menu">
+    <a class="logo" href="#">Sereno</a>
+    <nav class="links"><a href="#manifesto">Robô</a>, <a href="#faz">Como funciona</a>, <a href="#olhares">Olhares</a>, <a href="#chamada">Reserva</a></nav>
+    <a class="contato" href="#chamada">Fale com a gente</a>
+    <button class="menu-btn" aria-expanded="false" aria-controls="tela-menu">Menu</button>
+  </header>
+
+  <div class="tela-menu" id="tela-menu">
+    <a href="#manifesto">Robô</a>
+    <a href="#faz">Como funciona</a>
+    <a href="#olhares">Olhares</a>
+    <a href="#chamada">Reserva</a>
+    <a href="#chamada">Fale com a gente</a>
+  </div>
+
+  <main>
+    <section class="hero">
+      <div class="hero-caixa">
+        <p class="intro">Sereno é um robô de companhia pra casa.<br>Cerâmica por fora, lã por cima.</p>
+        <p class="digitado"><span id="texto"></span><span class="cursor" id="cursor">|</span></p>
+        <div class="pilulas">
+          <a class="pilula" href="#faz">Como ele funciona</a>
+          <a class="pilula" href="#olhares">Ver os olhares</a>
+          <a class="pilula" href="#chamada">Reservar o meu</a>
+          <a class="pilula" href="#chamada">Ficha técnica</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao manifesto" id="manifesto">
+      <p id="manifesto-texto">A maioria das máquinas responde rápido demais. O Sereno espera você terminar a frase, vira a cabeça na sua direção e só então decide se precisa dizer alguma coisa.</p>
+    </section>
+
+    <section class="secao faz" id="faz">
+      <div class="colunas">
+        <div class="coluna">
+          <span class="num">01</span>
+          <h3>Olha pra quem fala</h3>
+          <p>Seis microfones localizam a voz e a cabeça gira até você, sem pressa e sem barulho de motor.</p>
+        </div>
+        <div class="coluna">
+          <span class="num">02</span>
+          <h3>Lembra do que importa</h3>
+          <p>Remédio das oito, a planta que precisa de água, o nome do vizinho. Tudo guardado no próprio robô, sem nuvem.</p>
+        </div>
+        <div class="coluna">
+          <span class="num">03</span>
+          <h3>Sabe ficar quieto</h3>
+          <p>Quando a casa está em silêncio, ele também fica. Nada de avisos às três da manhã nem conversa forçada.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao olhares" id="olhares">
+      <div class="faixa">
+        <img src="assets/olhar-esquerda.jpg" alt="Sereno olhando para a esquerda" data-tempo="inicio" loading="lazy">
+        <img src="assets/olhar-frente.jpg" alt="Sereno olhando para a frente" data-tempo="meio" loading="lazy">
+        <img src="assets/olhar-direita.jpg" alt="Sereno olhando para a direita" data-tempo="fim" loading="lazy">
+      </div>
+    </section>
+
+    <section class="secao chamada" id="chamada">
+      <h2>Um robô que escuta antes de responder.</h2>
+      <a class="botao" href="mailto:ola@sereno.exemplo">Fale com a gente</a>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <span>Sereno</span>
+    <span>© 2026</span>
+  </footer>
+
+<script>
+(() => {
+  const reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* 6. JAVASCRIPT: o mouse controla o vídeo */
+  const video = document.getElementById('bg');
+  const SENSIBILIDADE = 0.8;
+  let alvo = 0, pulando = false, pendente = false, xAnterior = null;
+
+  function pular() {
+    if (!video.duration) return;
+    if (pulando) { pendente = true; return; }
+    pulando = true;
+    video.currentTime = alvo;
+  }
+  video.addEventListener('seeked', () => {
+    pulando = false;
+    if (pendente) { pendente = false; pular(); }
+  });
+  function aoCarregar() {
+    alvo = video.duration / 2;
+    pular();
+  }
+  if (video.readyState >= 1) aoCarregar(); else video.addEventListener('loadedmetadata', aoCarregar, { once: true });
+
+  if (!reduz) {
+    addEventListener('mousemove', e => {
+      if (xAnterior === null) { xAnterior = e.clientX; return; }
+      const diferenca = e.clientX - xAnterior;
+      xAnterior = e.clientX;
+      if (!video.duration) return;
+      alvo += (diferenca / innerWidth) * SENSIBILIDADE * video.duration;
+      alvo = Math.min(Math.max(alvo, 0), video.duration);
+      pular();
+    });
+
+    /* Seção 3: hover em cada quadro pula o vídeo de fundo */
+    document.querySelectorAll('.faixa img').forEach(img => {
+      img.addEventListener('mouseenter', () => {
+        if (!video.duration) return;
+        const d = video.duration;
+        alvo = { inicio: 0, meio: d / 2, fim: d }[img.dataset.tempo];
+        pular();
+      });
+    });
+  }
+
+  /* 5. ANIMAÇÃO: máquina de escrever */
+  const frase = 'Ele vira a cabeça quando você fala, presta atenção e só responde quando faz sentido.';
+  const alvoTexto = document.getElementById('texto');
+  const cursor = document.getElementById('cursor');
+  if (reduz) {
+    alvoTexto.textContent = frase;
+    cursor.classList.add('fim');
+  } else {
+    let i = 0;
+    setTimeout(function escrever() {
+      alvoTexto.textContent = frase.slice(0, ++i);
+      if (i < frase.length) setTimeout(escrever, 38);
+      else cursor.classList.add('fim');
+    }, 600);
+  }
+
+  /* Menu do celular */
+  const botao = document.querySelector('.menu-btn');
+  const tela = document.getElementById('tela-menu');
+  function alternar(abrir) {
+    tela.classList.toggle('aberto', abrir);
+    botao.setAttribute('aria-expanded', abrir);
+    botao.textContent = abrir ? 'Fechar' : 'Menu';
+  }
+  botao.addEventListener('click', () => alternar(!tela.classList.contains('aberto')));
+  tela.querySelectorAll('a').forEach(a => a.addEventListener('click', () => alternar(false)));
+
+  /* Seção 1: cada linha entra desfocada */
+  const p = document.getElementById('manifesto-texto');
+  const original = p.textContent;
+  let observador;
+  function dividir() {
+    const jaDentro = new Set();
+    p.querySelectorAll('.linha').forEach((l, i) => l.classList.contains('dentro') && jaDentro.add(i));
+    p.innerHTML = original.split(' ').map(w => `<span class="w">${w}</span>`).join(' ');
+    const linhas = [];
+    let topo = null;
+    p.querySelectorAll('.w').forEach(w => {
+      if (w.offsetTop !== topo) { topo = w.offsetTop; linhas.push([]); }
+      linhas[linhas.length - 1].push(w.textContent);
+    });
+    p.innerHTML = linhas.map((l, i) => `<span class="linha${reduz || jaDentro.has(i) ? ' dentro' : ''}">${l.join(' ')}</span>`).join('');
+    if (reduz) return;
+    observador && observador.disconnect();
+    observador = new IntersectionObserver(entradas => {
+      let n = 0;
+      entradas.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        setTimeout(() => el.classList.add('dentro'), n++ * 120);
+        observador.unobserve(el);
+      });
+    }, { threshold: 0.3 });
+    p.querySelectorAll('.linha:not(.dentro)').forEach(l => observador.observe(l));
+  }
+  document.fonts.ready.then(dividir);
+  let t;
+  addEventListener('resize', () => { clearTimeout(t); t = setTimeout(dividir, 150); });
+})();
+</script>
+</body>
+</html>
